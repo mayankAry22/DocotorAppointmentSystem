@@ -6,28 +6,40 @@ from django.contrib.auth.forms import AuthenticationForm
 
 
 def login_user(request):
+    error = None
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username = username, password = password)
-        if user is not None and user.user_type == 'C':
-            form = login(request, user)
-            return redirect('index')
+        if user is not None:
+            if user.user_type == 'C':
+               form = login(request, user)
+               return redirect('index')
+            else:
+               error = True
+        else:
+            error = True
        
     form = AuthenticationForm()
-    return render(request, 'registration/login.html', {'form':form})
+    return render(request, 'registration/login.html', {'form':form, 'user_type': 'User', 'error': error})
 
 def login_doctor(request):
+    error = None
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username = username, password = password)
-        if user is not None and user.user_type == 'D':
-            form = login(request, user)
-            return redirect('doctor_dashboard', user.pk)
+        if user is not None:
+            if user.user_type == 'D':
+               form = login(request, user)
+               return redirect('doctor_dashboard', user.pk)
+            else:
+               error = True
+        else:
+            error = True
        
     form = AuthenticationForm()
-    return render(request, 'registration/login.html', {'form':form })
+    return render(request, 'registration/login.html', {'form':form , 'user_type': 'Doctor', 'error': error})
 
 def register_user(request):
     if request.method == 'POST':
