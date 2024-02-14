@@ -15,7 +15,7 @@ def login_user(request):
             return redirect('index')
        
     form = AuthenticationForm()
-    return render(request, 'userauth/login.html', {'form':form})
+    return render(request, 'registration/login.html', {'form':form})
 
 def login_doctor(request):
     if request.method == 'POST':
@@ -24,10 +24,10 @@ def login_doctor(request):
         user = authenticate(request, username = username, password = password)
         if user is not None and user.user_type == 'D':
             form = login(request, user)
-            return redirect('doctor_dashboard')
+            return redirect('doctor_dashboard', user.pk)
        
     form = AuthenticationForm()
-    return render(request, 'userauth/login.html', {'form':form})
+    return render(request, 'registration/login.html', {'form':form })
 
 def register_user(request):
     if request.method == 'POST':

@@ -12,7 +12,7 @@ class RegisterDoctorUserForm(UserCreationForm):
     class Meta:
         model = Doctor
         fields = ['username', 'first_name', 'last_name', 'doc_email', 
-                  'specialization', 'location', 'password1', 'password2']
+                  'specialization', 'location', 'fee', 'experiences', 'password1', 'password2']
         
         
         
