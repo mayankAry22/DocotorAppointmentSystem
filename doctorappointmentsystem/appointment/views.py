@@ -129,7 +129,7 @@ def user_profile(request, user_pk):
         return redirect('index')
 
 @login_required(login_url='login')
-def change_password(request, user_pk):
+def change_password(request):
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
@@ -414,9 +414,9 @@ def doctor_dashboard(request, doctor_pk):
  
  
 @login_required(login_url='login')
-def create_appoint_doctor(request, doctor_pk, user_pk):
+def create_appoint_doctor(request, doctor_pk):
     doctor = get_object_or_404(Doctor, pk=doctor_pk)
-    customer = get_object_or_404(Customer, pk=user_pk)
+    customer = get_object_or_404(Customer, pk=request.user.pk)
 
     if request.method == 'POST' and request.user is not None and doctor is not None:
         form = AppointmentCreateFormDoctor(request.POST)
