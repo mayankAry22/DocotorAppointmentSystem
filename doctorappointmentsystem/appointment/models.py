@@ -51,7 +51,7 @@ class Doctor(User):
     objects = DoctorManager()
     specialization = models.CharField('Specialization', max_length=50)
     location = models.CharField('Location', max_length=50)
-    experince = models.CharField('Experince', max_length=50)
+    experience = models.CharField('Experience', max_length=50)
     info = models.TextField('Information', max_length=1250, blank=True)
     doc_email = models.CharField('Doc_Email', max_length=50)
     fee = models.IntegerField('Fee', default = 500)

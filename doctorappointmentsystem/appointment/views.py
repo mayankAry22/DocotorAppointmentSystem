@@ -8,8 +8,8 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from datetime import date, datetime, timedelta
-from .forms import AppointmentCreateFormDoctor, AppointmentCreateFewForm, DoctorReviewForm
-from .models import Appointment, Doctor, Customer, DoctorReview
+from .forms import DoctorReviewForm
+from .models import Appointment, Doctor, Customer
 from .filters import DoctorFilter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
