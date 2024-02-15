@@ -11,15 +11,11 @@ def login_user(request):
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username = username, password = password)
-        if user is not None:
-            if user.user_type == 'C':
-               form = login(request, user)
-               return redirect('index')
-            else:
-               error = True
+        if user is not None and user.user_type == 'C':
+            form = login(request, user)
+            return redirect('index')
         else:
             error = True
-       
     form = AuthenticationForm()
     return render(request, 'registration/login.html', {'form':form, 'user_type': 'User', 'error': error})
 
@@ -29,15 +25,11 @@ def login_doctor(request):
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username = username, password = password)
-        if user is not None:
-            if user.user_type == 'D':
-               form = login(request, user)
-               return redirect('doctor_dashboard', user.pk)
-            else:
-               error = True
+        if user is not None and user.user_type == 'D':
+            form = login(request, user)
+            return redirect('doctor_dashboard', user.pk)
         else:
             error = True
-       
     form = AuthenticationForm()
     return render(request, 'registration/login.html', {'form':form , 'user_type': 'Doctor', 'error': error})
 
@@ -57,11 +49,10 @@ def register_user(request):
 def register_doctor(request):
     if request.method == 'POST':
         form = RegisterDoctorUserForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('index')
-        else:
+        if not form.is_valid():
             raise Http404('Form is not valid')
+        form.save()
+        return redirect('index')
     else:
         form = RegisterDoctorUserForm()
 

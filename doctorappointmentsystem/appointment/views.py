@@ -24,16 +24,16 @@ class IndexView(generic.ListView):
         return Doctor.objects.all()
 
 
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def index_page(request):
     doctors_list = Doctor.objects.all().order_by('id')
-    
+
     myFilter = DoctorFilter(request.GET, queryset=doctors_list)
     doctors_list = myFilter.qs
-    
+
     p = Paginator(doctors_list, 5)
     page_number = request.GET.get('page')
-    
+
     try:
         page_obj = p.get_page(page_number)  # returns the desired page object
     except PageNotAnInteger:
@@ -42,16 +42,16 @@ def index_page(request):
     except EmptyPage:
         # if page is empty then return last page
         page_obj = p.page(p.num_pages)
-        
+
     context = {
         'page_obj': page_obj,
         'myFilter': myFilter
     }
 
     return render(request, 'appointment/index.html', context)
+    
 
-
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def doctor_detail_view(request, doc_pk):
     doctor_details = Doctor.objects.prefetch_related('doctorreview_set').filter(id = doc_pk)
     context = {
@@ -60,7 +60,7 @@ def doctor_detail_view(request, doc_pk):
     
     return render(request, 'appointment/doctor_detail.html', context)
 
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def doc_profile_view(request, doc_pk):
     doctor_details = Doctor.objects.get(id = doc_pk)
     context = {
@@ -70,7 +70,7 @@ def doc_profile_view(request, doc_pk):
     return render(request, 'appointment/doctor_detail.html', context)
     
 
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def write_review_view(request, doctor_pk):
     if request.method == 'POST':
         form = DoctorReviewForm(request.POST)
@@ -87,7 +87,7 @@ def write_review_view(request, doctor_pk):
                 
     return render(request, 'appointment/write_review.html', {'form': form})
     
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def user_appointments_view(request, user_pk):
     appointment_details = Appointment.objects.select_related('doctor').filter(customer_id=user_pk).all()
 
@@ -119,7 +119,7 @@ def cancel_appointment_view(request, appoint_pk):
         return redirect('doctor_dashboard', doctor_pk = request.user.pk)
     
 
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def user_profile(request, user_pk):
     if request.user.pk == user_pk:
         if request.user.user_type == 'C':
@@ -136,7 +136,7 @@ def user_profile(request, user_pk):
     else:
         return redirect('index')
 
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def change_password(request):
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
@@ -337,6 +337,7 @@ def doctor_appoints_with_day(request, doctor_pk, new_day):
     return render(request, 'appointment/appoint_with_day.html', doctor_appoint_with_day_data)
 
 
+@login_required(login_url='login_user')
 def appoint_detail(request, doctor_pk, appoint_pk):
     doctor = get_object_or_404(Doctor, pk=doctor_pk)
     appointment = get_object_or_404(Appointment, pk=appoint_pk)
@@ -349,7 +350,7 @@ def appoint_detail(request, doctor_pk, appoint_pk):
     return render(request, 'appointment/appoint_detail.html', appoint_detail_data)
 
 
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def make_appoint(request, doctor_pk, appoint_pk):
     doctor = get_object_or_404(Doctor, pk=doctor_pk)
     appointment = get_object_or_404(Appointment, pk=appoint_pk)
@@ -382,7 +383,7 @@ def make_appoint(request, doctor_pk, appoint_pk):
     return render(request, 'appointment/make_appoint.html', make_appoint_data)
 
 
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def moderator_dashboard(request):
 
     moderator_dashboard_data = {
@@ -395,7 +396,7 @@ def moderator_dashboard(request):
         raise Http404("ERROR: user is not authenticated.")
 
 
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def doctor_dashboard(request, doctor_pk):
     if request.user.is_authenticated and request.user.pk == doctor_pk and request.user.is_doctor():
         appointment_details = Appointment.objects.select_related('customer').filter(doctor_id=doctor_pk).all()
@@ -425,7 +426,7 @@ def doctor_dashboard(request, doctor_pk):
         raise Http404("ERROR: user is not authenticated.")
  
  
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def patient_detail_view(request, patient_pk):
      cust_details = Customer.objects.get(id=patient_pk)
      print(patient_pk)
@@ -433,7 +434,7 @@ def patient_detail_view(request, patient_pk):
      
      return render(request, 'appointment/customer_detail.html', { 'cust_details': cust_details })
  
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def create_appoint_doctor(request, doctor_pk):
     doctor = get_object_or_404(Doctor, pk=doctor_pk)
     customer = get_object_or_404(Customer, pk=request.user.pk)
@@ -457,7 +458,6 @@ def create_appoint_doctor(request, doctor_pk):
 
 def change_profile_pic(request):
     if 'image' in request.POST:
-        print(request.POST.get('image'))
         request.user.prifile_pic = request.POST.get('image')
         request.user.save()
     

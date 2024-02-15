@@ -18,7 +18,7 @@ class User(AbstractUser):
     first_name = models.CharField('First name', max_length=50)
     last_name = models.CharField('Last name', max_length=50)
     gender = models.CharField('Gender', max_length=1, choices=gender_type, default='M')
-    prifile_pic = models.ImageField(upload_to='images', null=True)
+    prifile_pic = models.ImageField(upload_to='images', null=True, blank=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -36,6 +36,10 @@ class User(AbstractUser):
     def is_doctor(self):
         """Return True if User is Doctor, else False"""
         return self.user_type == 'D'
+    
+    @property
+    def image_url(self):
+        return getattr(self.prifile_pic, 'url', None) if self.prifile_pic else None
 
 
 class DoctorManager(UserManager):
