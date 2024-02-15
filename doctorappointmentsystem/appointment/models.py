@@ -17,10 +17,11 @@ class User(AbstractUser):
     user_type = models.CharField('Type', max_length=1, choices=type_choices, default='C')
     first_name = models.CharField('First name', max_length=50)
     last_name = models.CharField('Last name', max_length=50)
-    gender = models.CharField('Gender', max_length=1, choices=gender_type, default='C')
+    gender = models.CharField('Gender', max_length=1, choices=gender_type, default='M')
+    prifile_pic = models.ImageField(upload_to='images', null=True)
 
     def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return f"{self.first_name} {self.last_name}"
 
     def get_absolute_url(self):
         return '/%i' % self.pk
@@ -83,6 +84,7 @@ class DoctorReview(models.Model):
 class Customer(User):
     objects = CustomerManager()
     phone_no = models.CharField('Phone', max_length=50)
+
 
     class Meta:
         ordering = ['last_name']
