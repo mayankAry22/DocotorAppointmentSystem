@@ -4,7 +4,9 @@
 {% block Title %}Write Review{% endblock %}
 
 {% block HeaderTitle %}
-<a href="{% url 'index' %}">To main</a>
+  {% if user.is_authenticated and user.is_customer %}
+    <a href="{% url 'index' %}">To main</a>
+  {% endif %}
 {% endblock %}
 
 {% block BodyContent %}

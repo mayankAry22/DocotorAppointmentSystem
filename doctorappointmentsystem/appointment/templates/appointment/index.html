@@ -2,6 +2,12 @@
 
 {% block Title %} Doctors {% endblock %}
 
+{% block HeaderTitle %}
+  {% if user.is_authenticated and user.is_customer %}
+     <a href="{% url 'index' %}">To main</a>
+  {% endif %}
+{% endblock %}
+
 {% block BodyContent %}
 <div class="row">
     <div class="col">
@@ -15,11 +21,14 @@
         </div>
     </div>
 </div>
+<br>
    <table class="table table-striped">
+    <H4>Doctor's List</H4>
        <thead>
            <tr>
                <th scope="col">SNo.</th>
-               <th scope="col">Doctor name</th>
+               <th scope="col">First name</th>
+               <th scope="col">Last name</th>
                <th scope="col">Location</th>
                <th scope="col">Specialisation</th>
                <th scope="col">Fee</th>
@@ -32,7 +41,8 @@
           <tbody>
               <tr>
                   <th scope="row">{{ forloop.counter }}</th>
-                  <td><a href="{% url 'doctor_details' post.pk %}">{{ post.first_name }} {{ post.last_name}}</a></td>
+                  <td><a href="{% url 'doctor_details' post.pk %}">{{ post.first_name }}</a></td>
+                  <td><a href="{% url 'doctor_details' post.pk %}">{{ post.last_name}}</a></td>
                   <td>{{ post.location }}</td>
                   <td>{{ post.specialization }}</td>
                   <td>{{ post.fee}}</td>
