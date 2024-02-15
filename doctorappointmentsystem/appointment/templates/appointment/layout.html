@@ -33,7 +33,7 @@
                         <a class="header_link bg-primary" href="{% url 'user_appointments' user.pk %}">Appointments</a>
                         <a class="header_link bg-primary" href="{% url 'user_detail' user.pk %}">Profile</a>
                     {% elif user.is_doctor %}
-                        <a class="header_link bg-primary" href="{% url 'doctor_details' user.pk %}">Profile</a>
+                        <a class="header_link bg-primary" href="{% url 'user_detail' user.pk %}">Profile</a>
                     {% endif %}
                     <a class="header_link bg-primary" href="{% url 'logout' %}">Logout</a>
                 {% else %}

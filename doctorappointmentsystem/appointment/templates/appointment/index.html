@@ -37,17 +37,17 @@
            </tr>
        </thead>
        {% if page_obj.object_list %}
-          {% for post in page_obj.object_list %}
+          {% for doc in page_obj.object_list %}
           <tbody>
               <tr>
                   <th scope="row">{{ forloop.counter }}</th>
-                  <td><a href="{% url 'doctor_details' post.pk %}">{{ post.first_name }}</a></td>
-                  <td><a href="{% url 'doctor_details' post.pk %}">{{ post.last_name}}</a></td>
-                  <td>{{ post.location }}</td>
-                  <td>{{ post.specialization }}</td>
-                  <td>{{ post.fee}}</td>
-                  <td><a href="{% url 'create_appointment' post.pk %}">Make Appointment</a></td>
-                  <td><a href="{% url 'write_review' post.pk %}">Write Review</a></td>
+                  <td><a href="{% url 'doctor_details' doc.pk %}">{{ doc.first_name }}</a></td>
+                  <td><a href="{% url 'doctor_details' doc.pk %}">{{ doc.last_name}}</a></td>
+                  <td>{{ doc.location }}</td>
+                  <td>{{ doc.specialization }}</td>
+                  <td>{{ doc.fee}}</td>
+                  <td><a href="{% url 'create_appointment' doc.pk %}">Make Appointment</a></td>
+                  <td><a href="{% url 'write_review' doc.pk %}">Write Review</a></td>
               </tr>
           </tbody>
           {% endfor %}
