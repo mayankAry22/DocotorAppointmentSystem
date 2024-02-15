@@ -1,0 +1,70 @@
+{% extends 'appointment/layout.html' %}
+
+{% block Title %}Doctor appointment{% endblock %}
+{% block HeaderTitle %}
+  {% if user.is_authenticated and user.is_customer %}
+     <a href="{% url 'index' %}">To main</a>
+  {% endif %}
+{% endblock %}
+
+{% block BodyContent %}
+{% if not user.is_authenticated %}
+<h1>Please Login</h1>
+{% else %}
+<div class="index_doctor_container">
+    {% if page_obj.object_list %}
+    <div class="index_doctor_block">
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">SNo</th>
+                    <th scope="col">Doctor Name</th>
+                    <th scope="col">specialization</th>
+                    <th scope="col">Location</th>
+                    <th scope="col">Start Time</th>
+                    <th scope="col">End Time</th>
+                    <th scope="col">Cancelled</th>
+                    <th scope="col">Approved</th>
+                    <th scope="col">Completed</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appoint in page_obj.object_list %}
+                   <tr>
+                       <th scope="row">{{ forloop.counter }}</th>
+                       <td>{{ appoint.doctor.first_name }}</td>
+                       <td>{{ appoint.doctor.specialization }}</td>
+                       <td>{{ appoint.doctor.location }}</td>
+                       <td>{{ appoint.start_time }}</td>
+                       <td>{{ appoint.end_time }}</td>
+                       <td>{{ appoint.is_cancelled }}</td>
+                       <td>{{ appoint.is_approved }}</td>
+                       <td>{{ appoint.is_completed }}</td>
+                       {% if appoint.is_cancelled %}
+                           <td>Cancelled</td>
+                       {% else %}
+                        <td><a href="{% url 'cancel_appointment' appoint.id %}">Cancel</a></td>
+                       {% endif %}
+                   </tr>
+                {% endfor %}
+            </tbody>
+            <center>
+                {%if page_obj.has_previous %} {# whether the previous page exists #}
+                   <a href="?page={{page_obj.previous_page_number}}">
+                    <</a> {# link to the prev page #}
+                {% endif %}
+                    <span>{{page_obj.number}}</span> {# the current page number #}
+                {%if page_obj.has_next %} {# whether the next page exists #}
+                    <a href="?page={{page_obj.next_page_number}}">></a> {# link to the next page #}
+                {% endif %}
+            </center>
+        </table>
+    </div>
+    {% else %}
+    <h1>There's no appointments!</h1>
+    {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

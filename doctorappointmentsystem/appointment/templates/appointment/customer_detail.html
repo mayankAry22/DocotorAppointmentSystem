@@ -1,0 +1,25 @@
+{% extends 'appointment/layout.html' %}
+
+{% block Title %} Patient Details {% endblock %}
+
+{% block BodyContent %}
+<div class="container">
+    <div class="mb-4">
+        <div class="mb-3">
+            <img src="{{ post.image.url }}" alt="img">
+        </div>
+        <div class="mb-3">
+        <label>Patient first name: {{cust_details.first_name}}</label>
+        </div>
+        <div class="mb-3">
+        <label>Patient last name: {{cust_details.last_name}}</label>
+        </div>
+        <div class="mb-3">
+        <label>Gender: {{cust_details.gender}}</label>
+        </div>
+        <div class="mb-3">
+        <label>Phone: {{cust_details.phone_no}}</label>
+        </div>
+    </div>
+</div>
+{% endblock %}

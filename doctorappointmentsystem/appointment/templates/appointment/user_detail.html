@@ -1,0 +1,49 @@
+{% extends 'appointment/layout.html' %}
+{% load static %}
+
+{% block Title %}{{ customer.pk }}{% endblock %}
+
+{% block HeaderTitle %}
+  {% if user.is_authenticated and user.is_customer %}
+    <a href="{% url 'index' %}">To main</a>
+  {% endif %}
+{% endblock %}
+
+{% block BodyContent %}
+
+<div class="container">
+    <div class="mb-4">
+        <div class="mb-3">
+            <img src="{{ user_details.prifile_pic.url }}" alt="img">
+        </div>
+        <div class="mb-3">
+            <label>First name: {{ user_details.first_name }}</label>
+        </div>
+        <div class="mb-3">
+            <label>Last name: {{user_details.last_name}}</label>
+        </div>
+        <div class="mb-3">
+            <label>Gender: {{user_details.gender}}</label>
+        </div>
+        <div class="mb-4">
+            <label>Email: {{ user_details.email }}</label>
+        </div>
+        <div class="mb-3">
+            <label>Phone: {{user_details.phone_no}}</label>
+        </div>
+
+        <a  href="{% url 'change_password' %}" type="button" class="btn btn-info">Change Password</a>
+        <br>
+        <br>
+        <form method='post' action="{% url 'change_profile_pic' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="controls">
+                <input type="file" name="image">
+            </div>
+            <button type="submit" class="btn btn-info">Change Profile Pic</button>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

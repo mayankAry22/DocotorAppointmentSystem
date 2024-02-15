@@ -1,0 +1,23 @@
+{% extends 'appointment/layout.html' %}
+
+{% block HeaderTitle %}
+  {% if user.is_authenticated and user.is_customer %}
+     <a href="{% url 'index' %}">To main</a>
+  {% endif %}
+{% endblock %}
+
+{% block BodyContent %}
+<div class="doctor_detail">
+    {% for doc in doctor_details %}
+       <h1>{{ doc.first_name}} {{ doc.last_name}}</h1>
+       <h4>{{ doctor_details.specialization }}</h4>
+       {% if doc.doctorreview_set.all %}
+          {% for rev in doc.doctorreview_set.all %}
+             <p>{{rev.review}}</p>
+          {% endfor %}
+       {% else %}
+          <h5>No reviews</h5>
+       {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
