@@ -8,9 +8,9 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from datetime import date, datetime, timedelta
-from .forms import DoctorReviewForm
+from .forms import DoctorReviewForm, AppointmentCreateFormDoctor
 from .models import Appointment, Doctor, Customer
-from .filters import DoctorFilter
+from .filters import DoctorFilter, AppointmentFilter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 
@@ -61,6 +61,16 @@ def doctor_detail_view(request, doc_pk):
     return render(request, 'appointment/doctor_detail.html', context)
 
 @login_required(login_url='login')
+def doc_profile_view(request, doc_pk):
+    doctor_details = Doctor.objects.get(id = doc_pk)
+    context = {
+        'doctor_details': doctor_details
+    }
+    
+    return render(request, 'appointment/doctor_detail.html', context)
+    
+
+@login_required(login_url='login')
 def write_review_view(request, doctor_pk):
     if request.method == 'POST':
         form = DoctorReviewForm(request.POST)
@@ -97,11 +107,11 @@ def user_appointments_view(request, user_pk):
         'page_obj': page_obj,
     }
     
-    return render(request, 'appointment/user_Appointments.html', context)
+    return render(request, 'appointment/user_appointments.html', context)
 
 
 def cancel_appointment_view(request, appoint_pk):
-    Appointment.objects.filter(id=appoint_pk).update(is_canceled=True)
+    Appointment.objects.filter(id=appoint_pk).update(is_cancelled=True)
     
     if request.user.user_type == 'C':
         return redirect('user_appointments', user_pk = request.user.pk)
@@ -112,15 +122,13 @@ def cancel_appointment_view(request, appoint_pk):
 @login_required(login_url='login')
 def user_profile(request, user_pk):
     if request.user.pk == user_pk:
-        customer = get_object_or_404(Customer, pk=user_pk)
-        today = date.today()
+        if request.user.user_type == 'C':
+            user_details = get_object_or_404(Customer, pk=user_pk)
+        elif request.user.user_type == 'D':
+            user_details = get_object_or_404(Doctor, pk=user_pk)
 
         user_profile_data = {
-            'title': customer.get_full_name(),
-            'customer': customer,
-            'appointment_list_past': customer.appointment_set.filter(date__lt=today).order_by('date'),
-            'appointment_list_present': customer.appointment_set.filter(date__exact=today).order_by('start_time'),
-            'appointment_list_future': customer.appointment_set.filter(date__gt=today).order_by('date')
+            'user_details': user_details,
         }
 
         return render(request, 'appointment/user_detail.html', user_profile_data)
@@ -391,6 +399,9 @@ def moderator_dashboard(request):
 def doctor_dashboard(request, doctor_pk):
     if request.user.is_authenticated and request.user.pk == doctor_pk and request.user.is_doctor():
         appointment_details = Appointment.objects.select_related('customer').filter(doctor_id=doctor_pk).all()
+        
+        myFilter = AppointmentFilter(request.GET, queryset=appointment_details)
+        appointment_details = myFilter.qs
     
         p = Paginator(appointment_details, 5)
         page_number = request.GET.get('page')
@@ -406,12 +417,21 @@ def doctor_dashboard(request, doctor_pk):
             
         context = {
             'page_obj': page_obj,
+            'myFilter': myFilter
         }
         
         return render(request, 'appointment/doctor_dashboard.html', context)
     else:
         raise Http404("ERROR: user is not authenticated.")
  
+ 
+@login_required(login_url='login')
+def patient_detail_view(request, patient_pk):
+     cust_details = Customer.objects.get(id=patient_pk)
+     print(patient_pk)
+     print(cust_details)
+     
+     return render(request, 'appointment/customer_detail.html', { 'cust_details': cust_details })
  
 @login_required(login_url='login')
 def create_appoint_doctor(request, doctor_pk):
@@ -435,3 +455,10 @@ def create_appoint_doctor(request, doctor_pk):
 
     return render(request, 'appointment/create_appoint.html', {'form': form, 'doctor': doctor, 'customer': customer})
 
+def change_profile_pic(request):
+    if 'image' in request.POST:
+        print(request.POST.get('image'))
+        request.user.prifile_pic = request.POST.get('image')
+        request.user.save()
+    
+    return redirect('user_detail', user_pk=request.user.pk)
