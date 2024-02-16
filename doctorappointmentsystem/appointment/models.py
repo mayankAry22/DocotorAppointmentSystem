@@ -18,7 +18,9 @@ class User(AbstractUser):
     first_name = models.CharField('First name', max_length=50)
     last_name = models.CharField('Last name', max_length=50)
     gender = models.CharField('Gender', max_length=1, choices=gender_type, default='M')
-    prifile_pic = models.ImageField(upload_to='images', null=True, blank=True)
+    prifile_pic = models.ImageField(upload_to='images/', null=True, blank=True)
+    phone_no = models.CharField('Phone', max_length=50)
+
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -27,7 +29,7 @@ class User(AbstractUser):
         return '/%i' % self.pk
 
     def get_full_name(self):
-        return '%s %s' % (self.first_name, self.last_name)
+        return f'{self.first_name} {self.last_name}'
 
     def is_customer(self):
         """Return True if User is Customer, else False"""
@@ -57,15 +59,14 @@ class Doctor(User):
     specialization = models.CharField('Specialization', max_length=50)
     location = models.CharField('Location', max_length=50)
     experience = models.CharField('Experience', max_length=50)
-    info = models.TextField('Information', max_length=1250, blank=True)
-    doc_email = models.CharField('Doc_Email', max_length=50)
     fee = models.IntegerField('Fee', default = 500)
+    is_approved = models.BooleanField('Approved', default=False)
 
     class Meta:
         ordering = ['specialization', 'last_name']
 
     def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return f"{self.first_name} {self.last_name}"
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -73,11 +74,10 @@ class Doctor(User):
         return super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        # return f'/{self.pk}'
         return '/%i' % self.pk
 
     def get_full_name(self):
-        return '%s %s' % (self.first_name, self.last_name)
+        return f'{self.first_name} {self.last_name}'
     
 
 class DoctorReview(models.Model):
@@ -87,14 +87,12 @@ class DoctorReview(models.Model):
 
 class Customer(User):
     objects = CustomerManager()
-    phone_no = models.CharField('Phone', max_length=50)
-
 
     class Meta:
         ordering = ['last_name']
 
     def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return f"{self.first_name} {self.last_name}"
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -105,7 +103,7 @@ class Customer(User):
         return f'/profile/{self.pk}'
 
     def get_full_name(self):
-        return '%s %s' % (self.first_name, self.last_name)
+        return f'{self.first_name} {self.last_name}'
 
 
 class Appointment(models.Model):
@@ -119,7 +117,7 @@ class Appointment(models.Model):
     is_completed = models.BooleanField("Completed", default = False)
 
     class Meta:
-        ordering = ['start_time']
+        ordering = ['start_time', '-date']
 
     def __str__(self):
         return str(self.start_time)
@@ -127,19 +125,13 @@ class Appointment(models.Model):
     def get_absolute_url(self):
         return f'/{self.doctor.id}/appoint/{self.id}'
 
-    def has_not_customer(self):
-        return self.customer is None
-
     def is_outdated(self):
-        today = datetime.datetime.today()
+        today = datetime.datetime.now()
         day = datetime.datetime.combine(self.date, self.start_time)
         return day <= today
 
     def is_working_day_appointment(self):
         return 0 <= self.date.weekday() <= 4
-
-    has_not_customer.boolean = True
-    has_not_customer.short_description = 'Has not customer?'
 
     is_outdated.boolean = True
     is_outdated.short_description = 'Is Outdated?'

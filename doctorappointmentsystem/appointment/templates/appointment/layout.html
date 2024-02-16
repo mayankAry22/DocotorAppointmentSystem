@@ -15,10 +15,11 @@
         <header class="header bg-primary">
             {% if user.is_authenticated %}
               {% if user.is_customer %}
-                 <a href="{% url 'index' %}"><img src="{% static 'appoint/img/doctor_appoint_logo_200x200.png' %}" alt="logo"></a>
+                 <a href="{% url 'index' %}">
               {% elif user.is_doctor %}
-                <a href="{% url 'doctor_dashboard' user.pk %}"><img src="{% static 'appoint/img/doctor_appoint_logo_200x200.png' %}" alt="logo"></a>
+                <a href="{% url 'doctor_dashboard' user.pk %}">
               {% endif %}
+              <img src="{% static 'appoint/img/doctor_appoint_logo_200x200.png' %}" alt="logo"></a>
             {% endif %}
             <nav class="header_nav">
                 {% block HeaderTitle %}

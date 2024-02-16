@@ -4,20 +4,20 @@
 {% block Title %}{{ customer.pk }}{% endblock %}
 
 {% block HeaderTitle %}
-  {% if user.is_authenticated and user.is_customer %}
-    <a href="{% url 'index' %}">To main</a>
-  {% endif %}
+{% if user.is_authenticated and user.is_customer %}
+<a href="{% url 'index' %}">To main</a>
+{% endif %}
 {% endblock %}
 
 {% block BodyContent %}
 
 <div class="container">
     <div class="mb-4">
-        <div class="mb-3">
+        <div>
             <img src="{{ user_details.image_url|default_if_none:'#' }}" alt="img">
         </div>
         <div class="mb-3">
-            <label>First name: {{ user_details.first_name }}</label>
+            <label>First name: {{ form.first_name }}</label>
         </div>
         <div class="mb-3">
             <label>Last name: {{user_details.last_name}}</label>
@@ -32,14 +32,12 @@
             <label>Phone: {{user_details.phone_no}}</label>
         </div>
 
-        <a  href="{% url 'change_password' %}" type="button" class="btn btn-info">Change Password</a>
+        <a href="{% url 'change_password' %}" type="button" class="btn btn-info">Change Password</a>
         <br>
         <br>
         <form method='post' action="{% url 'change_profile_pic' %}" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="controls">
-                <input type="file" name="image">
-            </div>
+            {{ form.as_p }}
             <button type="submit" class="btn btn-info">Change Profile Pic</button>
         </form>
 

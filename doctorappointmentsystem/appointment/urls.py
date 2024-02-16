@@ -1,10 +1,11 @@
 from django.urls import path
 from . import views 
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
-    path('', views.index_page, name='index'),
-   # path('<int:pk>', views.DoctorDetailView.as_view(), name='doctor_detail'),
-    path('profile/<int:user_pk>', views.user_profile, name='user_detail'),
+    path('', views.IndexPageView.as_view(), name='index'),
+    path('profile/<int:user_pk>', views.UserProfileView.as_view(), name='user_detail'),
     path('changepassword', views.change_password, name='change_password'),
     path('<int:user_pk>', views.user_appointments_view, name='user_appointments'),
     path('<int:doctor_pk>/create-appoint/', views.create_appoint_doctor, name='create_appointment'),
@@ -14,4 +15,5 @@ urlpatterns = [
     path('dashboard/<int:doctor_pk>', views.doctor_dashboard, name='doctor_dashboard'),
     path('<int:patient_pk>/patient-details', views.patient_detail_view, name='patient_detail'),
     path('profile-pic/', views.change_profile_pic, name='change_profile_pic'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
