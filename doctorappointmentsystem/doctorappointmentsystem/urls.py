@@ -20,10 +20,11 @@ from userauth import views as ua_views
 
 from django.conf.urls.static import static
 from django.conf import settings
+from appointment.admin import admin_site
 
 urlpatterns = [
     path('', include('django.contrib.auth.urls')),
-    path('admin/', admin.site.urls),
+    path('admin/', admin_site.urls),
     path('', include('appointment.urls')),
     path('login_user/', ua_views.login_user, name='login_user'),
     path('login_doctor/', ua_views.login_doctor, name='login_doctor'),
@@ -31,6 +32,4 @@ urlpatterns = [
     path('doctor/register', ua_views.register_doctor, name='register_doctor'),
 ]
 
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
