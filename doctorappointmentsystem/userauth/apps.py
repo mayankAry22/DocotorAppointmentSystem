@@ -5,6 +5,6 @@ class UserauthConfig(AppConfig):
     name = 'userauth'
     
     def ready(self):
-        import userauth.signals  # Add this line to import the signals.py
+        import userauth.signals  #To import the signals.py
 
     
