@@ -52,7 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'appointment.middleware.LoggingMiddleware',
+    'appointment.middlewareFiles.LoggingMiddleware.LoggingMiddleware',
+    'appointment.middlewareFiles.LoginRequiredMiddleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'doctorappointmentsystem.urls'
@@ -137,7 +138,6 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 AUTH_USER_MODEL = 'appointment.User'
-
 
 LOGIN_REDIRECT_URL = 'login_user'
 LOGOUT_REDIRECT_URL = 'index'

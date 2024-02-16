@@ -10,6 +10,7 @@ from .filters import DoctorFilter, AppointmentFilter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import View
 
 
 class IndexPageView(LoginRequiredMixin, TemplateView):
@@ -39,16 +40,17 @@ class IndexPageView(LoginRequiredMixin, TemplateView):
         return render(request, 'appointment/index.html', context)
     
 
-@login_required(login_url='login_user')
-def doctor_detail_view(request, doc_pk):
-    doctor_details = Doctor.objects.prefetch_related('doctorreview_set').filter(id = doc_pk)
-    context = {
-        'doctor_details': doctor_details
-    }
-    
-    return render(request, 'appointment/doctor_detail.html', context)
 
-@login_required(login_url='login_user')
+class DoctorDetailView(View):
+
+    def get(self, request, doc_pk):
+        doctor_details = Doctor.objects.prefetch_related('doctorreview_set').filter(id=doc_pk)
+        context = {
+            'doctor_details': doctor_details
+        }
+        return render(request, 'appointment/doctor_detail.html', context)
+
+
 def doc_profile_view(request, doc_pk):
     doctor_details = Doctor.objects.get(id = doc_pk)
     context = {
@@ -58,7 +60,7 @@ def doc_profile_view(request, doc_pk):
     return render(request, 'appointment/doctor_detail.html', context)
     
 
-@login_required(login_url='login_user')
+
 def write_review_view(request, doctor_pk):
     if request.method == 'POST':
         form = DoctorReviewForm(request.POST)
@@ -75,7 +77,7 @@ def write_review_view(request, doctor_pk):
                 
     return render(request, 'appointment/write_review.html', {'form': form})
     
-@login_required(login_url='login_user')
+
 def user_appointments_view(request, user_pk):
     appointment_details = Appointment.objects.select_related('doctor').filter(customer_id=user_pk).all()
 
@@ -130,7 +132,7 @@ class UserProfileView(LoginRequiredMixin, DetailView):
         context['form'] = self.form_class()
         return context
 
-@login_required(login_url='login_user')
+
 def change_password(request):
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
@@ -143,7 +145,7 @@ def change_password(request):
         
     return render(request, 'appointment/change_password.html', {'form': form })
 
-@login_required(login_url='login_user')
+
 def appoint_detail(request, doctor_pk, appoint_pk):
     appointment = get_object_or_404(Appointment, pk=appoint_pk)
 
@@ -154,7 +156,7 @@ def appoint_detail(request, doctor_pk, appoint_pk):
 
     return render(request, 'appointment/appoint_detail.html', appoint_detail_data)
 
-@login_required(login_url='login_user')
+
 def doctor_dashboard(request, doctor_pk):
     if request.user.is_authenticated and request.user.pk == doctor_pk and request.user.is_doctor():
         appointment_details = Appointment.objects.select_related('customer').filter(doctor_id=doctor_pk).all()
@@ -183,7 +185,7 @@ def doctor_dashboard(request, doctor_pk):
     else:
         raise Http404("ERROR: user is not authenticated.")
  
-@login_required(login_url='login_user')
+
 def patient_detail_view(request, patient_pk):
      cust_details = Customer.objects.get(id=patient_pk)
      print(patient_pk)
@@ -191,7 +193,7 @@ def patient_detail_view(request, patient_pk):
      
      return render(request, 'appointment/customer_detail.html', { 'cust_details': cust_details })
  
-@login_required(login_url='login_user')
+
 def create_appoint_doctor(request, doctor_pk):
     doctor = get_object_or_404(Doctor, pk=doctor_pk)
     customer = get_object_or_404(Customer, pk=request.user.pk)
@@ -213,7 +215,7 @@ def create_appoint_doctor(request, doctor_pk):
 
     return render(request, 'appointment/create_appoint.html', {'form': form, 'doctor': doctor, 'customer': customer})
 
-@login_required(login_url='login_user')
+
 def change_profile_pic(request):
     print(request.FILES.get('image'))
     if request.method == 'POST':
