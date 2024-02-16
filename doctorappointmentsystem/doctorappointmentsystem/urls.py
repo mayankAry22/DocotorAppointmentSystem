@@ -26,10 +26,10 @@ urlpatterns = [
     path('', include('django.contrib.auth.urls')),
     path('admin/', admin_site.urls),
     path('', include('appointment.urls')),
-    path('login_user/', ua_views.login_user, name='login_user'),
-    path('login_doctor/', ua_views.login_doctor, name='login_doctor'),
-    path('profile/register', ua_views.register_user, name='register_user'),
-    path('doctor/register', ua_views.register_doctor, name='register_doctor'),
+    path('login_user/', ua_views.LoginUserView.as_view(), name='login_user'),
+    path('login_doctor/', ua_views.LoginDoctorView.as_view(), name='login_doctor'),
+    path('user/register', ua_views.RegisterUserView.as_view(), name='register_user'),
+    path('doctor/register', ua_views.RegisterDoctorView.as_view(), name='register_doctor'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
