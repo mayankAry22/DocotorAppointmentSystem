@@ -5,6 +5,6 @@ class UserauthConfig(AppConfig):
     name = 'userauth'
     
     def ready(self):
-        import doctorappointmentsystem.userauth.signals.signals  #To import the signals.py
+        import userauth.signals.email_signals  #To import the signals.py
 
     

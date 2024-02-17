@@ -9,13 +9,11 @@ from .models import Appointment, Doctor, Customer, User
 from .filters import DoctorFilter, AppointmentFilter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import DetailView, TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 
 
-class IndexPageView(LoginRequiredMixin, TemplateView):
-    login_url = 'login_user'
-
+class IndexPageView(TemplateView):
+    
     def get(self, request, *args, **kwargs):
         if request.user.is_superuser:
             return redirect('admin:index')
@@ -108,8 +106,7 @@ def cancel_appointment_view(request, appoint_pk):
     else:
         return redirect('doctor_dashboard', doctor_pk = request.user.pk)
 
-class UserProfileView(LoginRequiredMixin, DetailView):
-    login_url = 'login_user'
+class UserProfileView(DetailView):
     template_name = 'appointment/user_detail.html'
     model = None  # Set the model based on user_type
     form_class = ProfilePic
