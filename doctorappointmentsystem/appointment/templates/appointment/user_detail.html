@@ -17,7 +17,7 @@
             <img src="{{ user_details.image_url|default_if_none:'#' }}" alt="img">
         </div>
         <div class="mb-3">
-            <label>First name: {{ form.first_name }}</label>
+            <label>First name: {{ user_details.first_name }}</label>
         </div>
         <div class="mb-3">
             <label>Last name: {{user_details.last_name}}</label>

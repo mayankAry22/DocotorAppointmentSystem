@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager
+from django.core.validators import RegexValidator
 import datetime
 
 
@@ -19,7 +20,9 @@ class User(AbstractUser):
     last_name = models.CharField('Last name', max_length=50)
     gender = models.CharField('Gender', max_length=1, choices=gender_type, default='M')
     prifile_pic = models.ImageField(upload_to='images/', null=True, blank=True)
-    phone_no = models.CharField('Phone', max_length=50)
+    mobile_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Mobile number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone_no = models.CharField(validators=[mobile_regex], max_length=17, unique=True)
+    email = models.EmailField(unique=True)
 
 
     def __str__(self):
@@ -59,8 +62,8 @@ class Doctor(User):
     specialization = models.CharField('Specialization', max_length=50)
     location = models.CharField('Location', max_length=50)
     experience = models.CharField('Experience', max_length=50)
-    fee = models.IntegerField('Fee', default = 500)
-    is_approved = models.BooleanField('Approved', default=False)
+    fee = models.IntegerField('Fee')
+    is_approved = models.BooleanField('Approve', default=False)
 
     class Meta:
         ordering = ['specialization', 'last_name']

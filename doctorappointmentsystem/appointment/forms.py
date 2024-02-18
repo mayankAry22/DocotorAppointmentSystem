@@ -7,7 +7,9 @@ class DoctorReviewForm(forms.ModelForm):
         model = DoctorReview
         fields = ['review']
 
-class AppointmentCreateFormDoctor(forms.ModelForm):
+class AppointmentCreateForm(forms.ModelForm):
+    start_time = forms.TimeField(input_formats=['%I:%M %p'])
+    end_time = forms.TimeField(input_formats=['%I:%M %p'])
     class Meta:
         model = Appointment
         fields = ['start_time', 'end_time', 'date']

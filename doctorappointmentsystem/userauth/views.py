@@ -1,17 +1,15 @@
 from django.shortcuts import render, redirect
-from .forms import RegisterUserForm, RegisterDoctorUserForm
+from .forms import RegisterUserForm, RegisterDoctorUserForm, CustomAuthenticationForm
 from django.http import Http404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.views import View
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.views import View
 
 
 class LoginUserView(View):
     template_name = 'registration/login.html'
-    form_class = AuthenticationForm
+    form_class = CustomAuthenticationForm
 
     def get(self, request):
         form = self.form_class()
@@ -21,9 +19,7 @@ class LoginUserView(View):
         error = None
         form = self.form_class(data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
+            user = form.user_cache
             if user is not None and user.user_type == 'C':
                 login(request, user)
                 return redirect('index')
@@ -33,7 +29,7 @@ class LoginUserView(View):
 
 class LoginDoctorView(View):
     template_name = 'registration/login.html'
-    form_class = AuthenticationForm
+    form_class = CustomAuthenticationForm
     
     def get(self, request):
         form = self.form_class()
@@ -43,9 +39,7 @@ class LoginDoctorView(View):
         error = None
         form = self.form_class(data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
+            user = form.user_cache
             if user is not None and user.user_type == 'D':
                 login(request, user)
                 return redirect('doctor_dashboard', user.pk)
