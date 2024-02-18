@@ -3,17 +3,11 @@
 
 {% block Title %}Login{% endblock %}
 
-{% block HeaderTitle %}
-  {% if user.is_authenticated and user.is_customer %}
-     <a href="{% url 'index' %}">To main</a>
-  {% endif %}
-{% endblock %}
-
 {% block BodyContent %}
 {% if error %}
 <div class="col-12 register-field">
     <div class="alert alert-block alert-danger">
-            <li>Please enter a correct username and password.</li>
+        <li>Please enter a correct username and password.</li>
     </div>
 </div>
 {% endif %}

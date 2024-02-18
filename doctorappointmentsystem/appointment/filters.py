@@ -9,4 +9,4 @@ class DoctorFilter(django_filters.FilterSet):
 class AppointmentFilter(django_filters.FilterSet):
     class Meta:
         model = Appointment
-        fields = ['start_time', 'end_time', 'date', 'is_cancelled']
+        fields = ['start_time', 'end_time', 'date', 'is_approved', 'is_completed', 'is_cancelled']
