@@ -1,15 +1,16 @@
-from operator import concat
-from django.shortcuts import get_object_or_404, render, redirect
-from django.http import Http404
-from django.contrib.auth.decorators import login_required
+from django.http import Http404, HttpResponseRedirect
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from .forms import DoctorReviewForm, AppointmentCreateFormDoctor, ProfilePic
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.views import View
+from .forms import DoctorReviewForm, AppointmentCreateForm, ProfilePic
 from .models import Appointment, Doctor, Customer, User
 from .filters import DoctorFilter, AppointmentFilter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.views.generic import DetailView, TemplateView
-from django.views import View
+from django.views.generic import (
+    DetailView, TemplateView, UpdateView, FormView, ListView, CreateView, RedirectView
+)
 
 
 class IndexPageView(TemplateView):
@@ -17,6 +18,8 @@ class IndexPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         if request.user.is_superuser:
             return redirect('admin:index')
+        elif request.user.user_type == 'D':
+            return redirect('doctor_dashboard', request.user.pk)
 
         doctors_list = Doctor.objects.filter(is_approved=True).order_by('id')
         myFilter = DoctorFilter(request.GET, queryset=doctors_list)
@@ -38,7 +41,6 @@ class IndexPageView(TemplateView):
         return render(request, 'appointment/index.html', context)
     
 
-
 class DoctorDetailView(View):
 
     def get(self, request, doc_pk):
@@ -48,67 +50,64 @@ class DoctorDetailView(View):
         }
         return render(request, 'appointment/doctor_detail.html', context)
 
+ 
 
-def doc_profile_view(request, doc_pk):
-    doctor_details = Doctor.objects.get(id = doc_pk)
-    context = {
-        'doctor_details': doctor_details
-    }
-    
-    return render(request, 'appointment/doctor_detail.html', context)
-    
-
-
-def write_review_view(request, doctor_pk):
-    if request.method == 'POST':
-        form = DoctorReviewForm(request.POST)
-
-        if form.is_valid():
-            form = form.save(commit=False)
-            doctor = Doctor.objects.get(id=doctor_pk)
-            form.doctor_id = doctor
-            form.save()
-            return redirect('index')
-        
-    else:  
+class WriteReviewView(View):
+    def get(self, request, doctor_pk):
         form = DoctorReviewForm()
-                
-    return render(request, 'appointment/write_review.html', {'form': form})
+        return render(request, 'appointment/write_review.html', {'form': form})
+
+    def post(self, request, doctor_pk):
+        form = DoctorReviewForm(request.POST)
+        if not form.is_valid():
+            return render(request, 'appointment/write_review.html', {'form': form})
+        review = form.save(commit=False)
+        doctor = Doctor.objects.get(id=doctor_pk)
+        review.doctor = doctor
+        review.save()
+        return redirect('index')
     
 
-def user_appointments_view(request, user_pk):
-    appointment_details = Appointment.objects.select_related('doctor').filter(customer_id=user_pk).all()
+class UserAppointmentsView(ListView):
+    model = Appointment
+    template_name = 'appointment/user_appointments.html'
+    context_object_name = 'appointment_details'
+    paginate_by = 5
 
-    p = Paginator(appointment_details, 5)
-    page_number = request.GET.get('page')
+    def get_queryset(self):
+        user_pk = self.kwargs['user_pk']
+        return Appointment.objects.select_related('doctor').filter(customer_id=user_pk).all()
     
-    try:
-        page_obj = p.get_page(page_number)  # returns the desired page object
-    except PageNotAnInteger:
-        # if page_number is not an integer then assign the first page
-        page_obj = p.page(1)
-    except EmptyPage:
-        # if page is empty then return last page
-        page_obj = p.page(p.num_pages)
+
+class ApproveAppointmentView(View):
+    def get(self, request, *args, **kwargs):
+        appointment = get_object_or_404(Appointment, pk=kwargs['pk'])
+        appointment.is_approved = True
+        appointment.save()
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         
-    context = {
-        'page_obj': page_obj,
-    }
-    
-    return render(request, 'appointment/user_appointments.html', context)
 
+class CompleteAppointmentView(View):
+    def get(self,request,  *args, **kwargs):
+        appointment = get_object_or_404(Appointment, pk=kwargs['pk'])
+        appointment.is_completed = True
+        appointment.save()
 
-def cancel_appointment_view(request, appoint_pk):
-    Appointment.objects.filter(id=appoint_pk).update(is_cancelled=True)
-    
-    if request.user.user_type == 'C':
-        return redirect('user_appointments', user_pk = request.user.pk)
-    else:
-        return redirect('doctor_dashboard', doctor_pk = request.user.pk)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+class CancelAppointmentView(RedirectView):
+
+    def get(self, request, *args, **kwargs):
+        appointment = get_object_or_404(Appointment, pk=kwargs['pk'])
+        appointment.is_cancelled = True
+        appointment.save()
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 class UserProfileView(DetailView):
     template_name = 'appointment/user_detail.html'
-    model = None  # Set the model based on user_type
+    model = None 
     form_class = ProfilePic
 
     def dispatch(self, request, *args, **kwargs):
@@ -130,95 +129,92 @@ class UserProfileView(DetailView):
         return context
 
 
-def change_password(request):
-    if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)
-            return redirect('index')
-    else:
-        form = PasswordChangeForm(request.user)
-        
-    return render(request, 'appointment/change_password.html', {'form': form })
+class ChangePasswordView(FormView):
+    template_name = 'appointment/change_password.html'
+    form_class = PasswordChangeForm
+
+    def form_valid(self, form):
+        user = form.save()
+        update_session_auth_hash(self.request, user)
+        return redirect('index')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 
-def appoint_detail(request, doctor_pk, appoint_pk):
-    appointment = get_object_or_404(Appointment, pk=appoint_pk)
+class DoctorDashboardView(ListView):
+    model = Appointment
+    template_name = 'appointment/doctor_dashboard.html'
+    context_object_name = 'appointment_list'
+    paginate_by = 5
 
-    appoint_detail_data = {
-        'title': appointment.start_time,
-        'appointment': appointment,
-    }
+    def get_queryset(self):
+        doctor_pk = self.kwargs['doctor_pk']
+        if self.request.user.is_authenticated and self.request.user.pk == doctor_pk and self.request.user.is_doctor():
+            appointment_details = Appointment.objects.select_related('customer').filter(doctor_id=doctor_pk)
+            return appointment_details
+        else:
+            raise Http404("ERROR: user is not authenticated.")
 
-    return render(request, 'appointment/appoint_detail.html', appoint_detail_data)
-
-
-def doctor_dashboard(request, doctor_pk):
-    if request.user.is_authenticated and request.user.pk == doctor_pk and request.user.is_doctor():
-        appointment_details = Appointment.objects.select_related('customer').filter(doctor_id=doctor_pk).all()
-        
-        myFilter = AppointmentFilter(request.GET, queryset=appointment_details)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        myFilter = AppointmentFilter(self.request.GET, queryset=self.get_queryset())
         appointment_details = myFilter.qs
-    
-        p = Paginator(appointment_details, 5)
-        page_number = request.GET.get('page')
+        
+        p = Paginator(appointment_details, self.paginate_by)
+        page_number = self.request.GET.get('page')
         
         try:
-            page_obj = p.get_page(page_number)  # returns the desired page object
+            page_obj = p.page(page_number)  # returns the desired page object
         except PageNotAnInteger:
             # if page_number is not an integer then assign the first page
             page_obj = p.page(1)
         except EmptyPage:
             # if page is empty then return last page
             page_obj = p.page(p.num_pages)
-            
-        context = {
-            'page_obj': page_obj,
-            'myFilter': myFilter
-        }
-        
-        return render(request, 'appointment/doctor_dashboard.html', context)
-    else:
-        raise Http404("ERROR: user is not authenticated.")
+        context['page_obj'] = page_obj
+        context['myFilter'] = myFilter
+        return context
  
 
-def patient_detail_view(request, patient_pk):
-     cust_details = Customer.objects.get(id=patient_pk)
-     print(patient_pk)
-     print(cust_details)
-     
-     return render(request, 'appointment/customer_detail.html', { 'cust_details': cust_details })
+class PatientDetailView(DetailView):
+    model = Customer
+    template_name = 'appointment/customer_detail.html'
+    context_object_name = 'cust_details'
+
+    def get_object(self, queryset=None):
+        return Customer.objects.get(id=self.kwargs['patient_pk'])
  
 
-def create_appoint_doctor(request, doctor_pk):
-    doctor = get_object_or_404(Doctor, pk=doctor_pk)
-    customer = get_object_or_404(Customer, pk=request.user.pk)
+class CreateAppointmentDoctorView(CreateView):
+    model = Appointment
+    form_class = AppointmentCreateForm
+    template_name = 'appointment/create_appoint.html'
 
-    if request.method == 'POST' and request.user is not None and doctor is not None:
-        form = AppointmentCreateFormDoctor(request.POST)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['doctor'] = get_object_or_404(Doctor, pk=self.kwargs['doctor_pk'])
+        context['customer'] = get_object_or_404(Customer, pk=self.request.user.pk)
+        return context
 
-        if form.is_valid():
-            appointment = form.save(commit=False)
-            appointment.customer = customer
-            appointment.doctor = doctor
-            appointment.save()
+    def form_valid(self, form):
+        doctor = get_object_or_404(Doctor, pk=self.kwargs['doctor_pk'])
+        customer = get_object_or_404(Customer, pk=self.request.user.pk)
+        form.instance.doctor = doctor
+        form.instance.customer = customer
+        return super().form_valid(form)
 
-            return redirect('index')
-        else:
-            raise Http404('Form is not valid')
-    else:
-        form = AppointmentCreateFormDoctor()
-
-    return render(request, 'appointment/create_appoint.html', {'form': form, 'doctor': doctor, 'customer': customer})
+    def get_success_url(self):
+        return reverse_lazy('index')
 
 
-def change_profile_pic(request):
-    print(request.FILES.get('image'))
-    if request.method == 'POST':
+class changeProfilePic(View):
+    def post(self, request, *args, **kwargs):
         user = get_object_or_404(User, pk=request.user.pk)
         form = ProfilePic(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
-    
-    return redirect('user_detail', user_pk=request.user.pk)
+            
+        return redirect('user_detail', user_pk=request.user.pk)
