@@ -36,7 +36,10 @@
                     {% elif user.is_doctor %}
                         <a class="header_link bg-primary" href="{% url 'user_detail' user.pk %}">Profile</a>
                     {% endif %}
-                    <a class="header_link bg-primary" href="{% url 'logout' %}">Logout</a>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="header_link bg-primary">Logout</button>
+                    </form> 
                 {% else %}
                     <a class="header_link bg-primary" href="{% url 'login_user' %}">Login as user</a>
                     <a class="header_link bg-primary" href="{% url 'login_doctor' %}">Login as Doctor</a>
