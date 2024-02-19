@@ -54,7 +54,7 @@ class DoctorDetailView(View):
 
 class WriteReviewView(View):
     def get(self, request, doctor_pk):
-        form = DoctorReviewForm()
+        form = DoctorReviewForm(initial={'doctor_id': doctor_pk})
         return render(request, 'appointment/write_review.html', {'form': form})
 
     def post(self, request, doctor_pk):
@@ -63,7 +63,7 @@ class WriteReviewView(View):
             return render(request, 'appointment/write_review.html', {'form': form})
         review = form.save(commit=False)
         doctor = Doctor.objects.get(id=doctor_pk)
-        review.doctor = doctor
+        review.doctor_id = doctor
         review.save()
         return redirect('index')
     
